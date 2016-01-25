@@ -10,3 +10,9 @@ Another point for using actors?
 ## What you can find inside?
 The examples shows how to define and create object, inherit and override objects, 
 compose object dynamically using mixins and change it runtime.
+
+## TODO
+Add some message correlation system [Ask<->Answer]
+Add async messaging [every object should run on another thread (Tasks are ok too)]
+
+Probably those TODOs gonna stay there for a while...
