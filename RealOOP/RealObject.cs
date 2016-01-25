@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using RealOOP.Defaultable;
 using RealOOP.Logging;
 using RealOOP.Messages;
@@ -10,7 +11,7 @@ namespace RealOOP
     public class RealObject
     {
         private readonly IDictionary<string, IMethod> _methods;
-
+        private readonly object _methodsLock = new object();
         protected ILogger Logger;
 
         public RealObject() : this(new DummyLogger())
@@ -22,31 +23,36 @@ namespace RealOOP
             Logger = logger;
             _methods = new DefaultableDictionary<string, IMethod>(
                 new Dictionary<string, IMethod>(),
-                new Method<object>((sender, payload) =>
+                new Method<object>(async (sender, payload) =>
                 {
-                    Send(sender, new MethodNotFoundMessage(payload));
+                    await Send(sender, new MethodNotFoundMessage(payload));
                 }));
 
-            AddMethod<MethodNotFoundMessage>(new Method<object>((sender, payload) =>
+            AddMethod<MethodNotFoundMessage>(new Method<object>(async (sender, payload) =>
             {
-                Logger.Trace($"Method not found: {payload}");
+                await Task.Run(() => Logger.Trace($"Method not found: {payload}"));
             }));
 
-            AddMethod<PingMessage>(new Method(sender =>
+            AddMethod<PingMessage>(new Method(async sender =>
             {
                 Logger.Trace($"Received Ping from {sender.GetObjectRef()}. Sending Pong.");
-                Send(sender, new PongMessage());
+                await Send(sender, new PongMessage());
             }));
 
-            AddMethod<PongMessage>(new Method(sender =>
+            AddMethod<PongMessage>(new Method(async sender =>
             {
-                Logger.Trace($"Received Pong from {sender.GetObjectRef()}");
+                await Task.Run(() => Logger.Trace($"Received Pong from {sender.GetObjectRef()}"));
             }));
         }
 
         protected List<KeyValuePair<string, IMethod>> GetMethods()
         {
-            return _methods.ToList();
+            List<KeyValuePair<string, IMethod>> methods;
+            lock (_methodsLock)
+            {
+                methods = _methods.ToList();
+            }
+            return methods;
         }
 
         public string GetObjectRef()
@@ -56,7 +62,10 @@ namespace RealOOP
 
         private void AddMethod(string messageTypeName, IMethod method)
         {
-            _methods[messageTypeName] = method;
+            lock (_methodsLock)
+            {
+                _methods[messageTypeName] = method;
+            }
         }
 
         protected void AddMethod<T>(IMethod method)
@@ -65,10 +74,10 @@ namespace RealOOP
             AddMethod(typeof (T).FullName, method);
         }
 
-        public virtual void Send<T>(RealObject destinationObject, T message)
+        public virtual async Task Send<T>(RealObject destinationObject, T message)
             where T : Message
         {
-            destinationObject.Recv(this, message);
+           await destinationObject.Recv(this, message);
         }
 
         public void Mixin<T>()
@@ -77,18 +86,22 @@ namespace RealOOP
             var mixin = new T();
             mixin.Logger = Logger;
             mixin.GetMethods()
-                .ForEach(namedMethod => 
-                    AddMethod(namedMethod.Key, namedMethod.Value)
-                );
+                    .ForEach(namedMethod =>
+                        AddMethod(namedMethod.Key, namedMethod.Value)
+                    );
         }
 
-        protected virtual void Recv<T>(RealObject sender, T message)
+        protected virtual async Task Recv<T>(RealObject sender, T message)
             where T : Message
         {
             Logger.Trace($"{GetObjectRef()} calls {message.GetType().Name} method in {sender.GetObjectRef()}");
-            var method = _methods[message.GetType().FullName];
+            IMethod method;
+            lock (_methodsLock)
+            {
+                method = _methods[message.GetType().FullName];
+            }
             sender = sender ?? new DeadLetterObject();
-            method.Call(sender, message.Payload);
+            await method.Call(sender, message.Payload);
         }
     }
 }

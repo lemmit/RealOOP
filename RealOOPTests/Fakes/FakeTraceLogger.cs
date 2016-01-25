@@ -10,11 +10,20 @@ namespace RealOOPTests.Fakes
 {
     internal class FakeTraceLogger : ILogger
     {
-        public int NumberOfCalls => _call;
+        public int NumberOfCalls
+        {
+            get
+            {
+                lock (sync)
+                {
+                    return _call;
+                }
+            }
+        }
         private readonly IList<Func<object, bool>> _calls 
             = new DefaultableList<Func<object, bool>>(o => false);
         private int _call;
-
+        private object sync = new object();
         public FakeTraceLogger FirstCall(Func<object, bool> call)
         {
             return AndThenCall(call);
@@ -33,15 +42,22 @@ namespace RealOOPTests.Fakes
 
         public void WriteLine(object @object)
         {
+            lock (sync)
+            {
+                
+            }
         }
 
         public void Trace(object @object)
         {
-            if (!_calls[_call](@object))
+            lock (sync)
             {
-                throw new Exception($"[Call {_call}] {@object.ToString()}");
+                if (!_calls[_call](@object))
+                {
+                    throw new Exception($"[Call {_call}] {@object.ToString()}");
+                }
+                _call++;
             }
-            _call++;
         }
     }
 

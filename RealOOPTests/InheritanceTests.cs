@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RealOOP;
 using RealOOP.Logging;
 using RealOOPTests.Fakes;
@@ -21,14 +22,11 @@ namespace RealOOPTests
         {
             public Base(ILogger logger = null) : base(logger) 
             {
-                AddMethod<TestMessage>(new Method(sender => 
-                    Send(
-                        sender, 
-                        new TestMessageResponse("Hi from test method [base]")
-                        )
-                    ));
-                AddMethod<TestMessageResponse>(new Method(sender =>
-                    Logger.Trace("Hi from test method response [base]"))
+                AddMethod<TestMessage>(new Method(async sender =>
+                    await Send(sender, new TestMessageResponse("Hi from test method [base]"))
+                ));
+                AddMethod<TestMessageResponse>(new Method(async sender =>
+                    await Task.Run( () => Logger.Trace("Hi from test method response [base]")))
                 );
             }
         }
@@ -44,14 +42,14 @@ namespace RealOOPTests
                 : base(logger)
             {
                 //redefine
-                AddMethod<TestMessageResponse>(new Method<string>( (sender, str) =>
-                    Logger.Trace("Hi from test method response [derived]")
+                AddMethod<TestMessageResponse>(new Method<string>(async (sender, str) =>
+                     await Task.Run(() => Logger.Trace("Hi from test method response [derived]"))
                 ));
             }
         }
 
         [TestMethod]
-        public void DeriveMethodOfTheBaseClass()
+        public async Task DeriveMethodOfTheBaseClass()
         {
             var logger = new FakeTraceLogger()
                     .FirstCall(o => o.ToString().Contains("calls TestMessage"))
@@ -60,12 +58,12 @@ namespace RealOOPTests
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new Derived(logger);
-            baseObj.Send(derivedObj, new TestMessage("TestMethod"));
+            await baseObj.Send(derivedObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
 
         [TestMethod]
-        public void RedefineMethodInTheDerivedClass()
+        public async Task RedefineMethodInTheDerivedClass()
         {
             var logger = new FakeTraceLogger()
                     .FirstCall(o => o.ToString().Contains("calls TestMessage"))
@@ -74,12 +72,12 @@ namespace RealOOPTests
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new DerivedWithOverridenMethod(logger);
-            derivedObj.Send(baseObj, new TestMessage("TestMethod"));
+            await derivedObj.Send(baseObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
 
         [TestMethod]
-        public void RedefineMethodInTheTheDerivedClassButBaseStaysUnmodified()
+        public async Task RedefineMethodInTheTheDerivedClassButBaseStaysUnmodified()
         {
             var logger = new FakeTraceLogger()
                     .FirstCall(o => o.ToString().Contains("calls TestMessage"))
@@ -88,7 +86,7 @@ namespace RealOOPTests
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new DerivedWithOverridenMethod(logger);
-            baseObj.Send(derivedObj, new TestMessage("TestMethod"));
+            await baseObj.Send(derivedObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
     }

@@ -1,4 +1,5 @@
-﻿using RealOOP.Logging;
+﻿using System.Threading.Tasks;
+using RealOOP.Logging;
 
 namespace RealOOP.Objects
 {
@@ -8,9 +9,14 @@ namespace RealOOP.Objects
         {
         }
 
-        protected override void Recv<T>(RealObject sender, T message)
+        protected override Task Recv<T>(RealObject sender, T message)
         {
-            Logger.Trace($"DeadLetter got a message! {message.GetType().Name}: {message.Payload}");
+            return
+                Task.Run(
+                    () => {
+                        Logger.Trace($"DeadLetter got a message! {message.GetType().Name}: {message.Payload ?? "[Empty Message]"}");
+                        return true;
+                    });
         }
     }
 }

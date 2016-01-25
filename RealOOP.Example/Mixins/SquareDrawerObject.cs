@@ -15,12 +15,13 @@ namespace RealOOP.Example.Mixins
         }
         public SquareDrawerObject(ILogger logger) : base(logger)
         {
-            AddMethod<DrawSquareMessage>(new Method<int>((sender, h) =>
-            {
-                Enumerable.Range(0, h).ToList().ForEach(
-                    _ => Console.WriteLine("".PadLeft(h, '#'))
-                    );
-            }));
+            AddMethod<DrawSquareMessage>(new Method<int>(async (sender, h) =>
+                await Task.Run(() =>
+                {
+                    Enumerable.Range(0, h).ToList().ForEach(
+                        _ => Console.WriteLine("".PadLeft(h, '#'))
+                        );
+                })));
         }
     }
 }

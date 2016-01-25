@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RealOOP;
 using RealOOP.Messages;
@@ -12,18 +13,18 @@ namespace RealOOPTests
        
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void PingObjectAndRecievePong_missspell1()
+        public async Task PingObjectAndRecievePong_missspell1()
         {
             var logger = new FakeTraceLogger();
             logger.FirstCall(str => str.ToString().Contains("call Ping"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.Send(secondRealObject, new PingMessage());
+            await firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void PingObjectAndRecievePong_missspell2()
+        public async Task PingObjectAndRecievePong_missspell2()
         {
             var logger = new FakeTraceLogger();
             logger.IgnoreCall()
@@ -31,12 +32,12 @@ namespace RealOOPTests
                 
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.Send(secondRealObject, new PingMessage());
+            await firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void PingObjectAndRecievePong_missspell3()
+        public async Task PingObjectAndRecievePong_missspell3()
         {
             var logger = new FakeTraceLogger();
             logger.IgnoreCall()
@@ -44,13 +45,13 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("call Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.Send(secondRealObject, new PingMessage());
+            await firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
 
         [TestMethod]
         [ExpectedException(typeof(Exception))]
-        public void PingObjectAndRecievePong_missspell4()
+        public async Task PingObjectAndRecievePong_missspell4()
         {
             var logger = new FakeTraceLogger();
             logger.IgnoreCall()
@@ -59,11 +60,11 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("Recieved Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.Send(secondRealObject, new PingMessage());
+            await firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
-        public void PingObjectAndRecievePong()
+        public async Task PingObjectAndRecievePong()
         {
             var logger = new FakeTraceLogger();
             logger
@@ -73,7 +74,7 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("Received Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.Send(secondRealObject, new PingMessage());
+            await firstRealObject.Send(secondRealObject, new PingMessage());
             Assert.AreEqual(4, logger.NumberOfCalls);
         }
     }
