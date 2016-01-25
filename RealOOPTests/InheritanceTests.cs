@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RealOOP;
 using RealOOP.Logging;
 using RealOOPTests.Fakes;
@@ -9,17 +8,26 @@ namespace RealOOPTests
     [TestClass]
     public class InheritanceTests
     {
+        private class TestMessage : Message<string>
+        {
+            public TestMessage(string msg) : base(msg) { }
+        }
+        private class TestMessageResponse : Message<string>
+        {
+            public TestMessageResponse(string msg) : base(msg) { }
+        }
+
         private class Base : RealObject
         {
             public Base(ILogger logger = null) : base(logger) 
             {
-                AddMethod(new Method("TestMethod", sender => 
-                    SendMessageTo(
+                AddMethod<TestMessage>(new Method(sender => 
+                    Send(
                         sender, 
-                        new Message<string>("TestMethodResponse", "Hi from test method [base]")
+                        new TestMessageResponse("Hi from test method [base]")
                         )
                     ));
-                AddMethod(new Method("TestMethodResponse", sender =>
+                AddMethod<TestMessageResponse>(new Method(sender =>
                     Logger.Trace("Hi from test method response [base]"))
                 );
             }
@@ -36,9 +44,9 @@ namespace RealOOPTests
                 : base(logger)
             {
                 //redefine
-                AddMethod(new Method("TestMethodResponse", sender =>
-                    Logger.Trace("Hi from test method response [derived]"))
-                );
+                AddMethod<TestMessageResponse>(new Method<string>( (sender, str) =>
+                    Logger.Trace("Hi from test method response [derived]")
+                ));
             }
         }
 
@@ -46,13 +54,13 @@ namespace RealOOPTests
         public void DeriveMethodOfTheBaseClass()
         {
             var logger = new FakeTraceLogger()
-                    .FirstCall(o => o.ToString().Contains("calls TestMethod"))
-                    .AndThenCall(o => o.ToString().Contains("calls TestMethodResponse"))
+                    .FirstCall(o => o.ToString().Contains("calls TestMessage"))
+                    .AndThenCall(o => o.ToString().Contains("calls TestMessageResponse"))
                     .AndThenCall(o => o.ToString().Contains("test method response [base]"))
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new Derived(logger);
-            baseObj.SendMessageTo(derivedObj, new Message("TestMethod"));
+            baseObj.Send(derivedObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
 
@@ -60,13 +68,13 @@ namespace RealOOPTests
         public void RedefineMethodInTheDerivedClass()
         {
             var logger = new FakeTraceLogger()
-                    .FirstCall(o => o.ToString().Contains("calls TestMethod"))
-                    .AndThenCall(o => o.ToString().Contains("calls TestMethodResponse"))
+                    .FirstCall(o => o.ToString().Contains("calls TestMessage"))
+                    .AndThenCall(o => o.ToString().Contains("calls TestMessageResponse"))
                     .AndThenCall(o => o.ToString().Contains("test method response [derived]"))
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new DerivedWithOverridenMethod(logger);
-            derivedObj.SendMessageTo(baseObj, new Message("TestMethod"));
+            derivedObj.Send(baseObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
 
@@ -74,13 +82,13 @@ namespace RealOOPTests
         public void RedefineMethodInTheTheDerivedClassButBaseStaysUnmodified()
         {
             var logger = new FakeTraceLogger()
-                    .FirstCall(o => o.ToString().Contains("calls TestMethod"))
-                    .AndThenCall(o => o.ToString().Contains("calls TestMethodResponse"))
+                    .FirstCall(o => o.ToString().Contains("calls TestMessage"))
+                    .AndThenCall(o => o.ToString().Contains("calls TestMessageResponse"))
                     .AndThenCall(o => o.ToString().Contains("test method response [base]"))
                     ;
             var baseObj = new Base(logger);
             var derivedObj = new DerivedWithOverridenMethod(logger);
-            baseObj.SendMessageTo(derivedObj, new Message("TestMethod"));
+            baseObj.Send(derivedObj, new TestMessage("TestMethod"));
             Assert.AreEqual(3, logger.NumberOfCalls);
         }
     }

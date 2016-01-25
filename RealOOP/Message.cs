@@ -1,25 +1,21 @@
 ﻿namespace RealOOP
 {
-    public class Message
+    public abstract class Message
     {
-        public virtual string MethodName => _methodName;
         public virtual object Payload => _payload;
-
-        private readonly string _methodName;
         private readonly object _payload;
-        public Message(string methodName, object payload = null)
+        protected Message(object payload = null)
         {
-            _methodName = methodName;
             _payload = payload;
         }
     }
 
-    public class Message<T> : Message
+    public abstract class Message<T> : Message
     {
-        public T Payload => (T)base.Payload;
-        public Message(string methodName, T payload = default(T)) 
-            : base(methodName, payload)
+        public virtual T Payload => (T)base.Payload;
+        protected Message(T payload = default(T)) : base(payload)
         {
         }
     }
+
 }

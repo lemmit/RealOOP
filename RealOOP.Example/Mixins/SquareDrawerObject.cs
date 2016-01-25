@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RealOOP.Example.Messages;
 using RealOOP.Logging;
 
 namespace RealOOP.Example.Mixins
@@ -14,7 +15,7 @@ namespace RealOOP.Example.Mixins
         }
         public SquareDrawerObject(ILogger logger) : base(logger)
         {
-            AddMethod(new Method<int>("DrawSquare", (sender, h) =>
+            AddMethod<DrawSquareMessage>(new Method<int>((sender, h) =>
             {
                 Enumerable.Range(0, h).ToList().ForEach(
                     _ => Console.WriteLine("".PadLeft(h, '#'))

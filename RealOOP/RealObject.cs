@@ -2,6 +2,8 @@
 using System.Linq;
 using RealOOP.Defaultable;
 using RealOOP.Logging;
+using RealOOP.Messages;
+using RealOOP.Objects;
 
 namespace RealOOP
 {
@@ -20,29 +22,31 @@ namespace RealOOP
             Logger = logger;
             _methods = new DefaultableDictionary<string, IMethod>(
                 new Dictionary<string, IMethod>(),
-                new Method<object>("IfMethodNotFound", (sender, payload) =>
+                new Method<object>((sender, payload) =>
                 {
-                    SendMessageTo(sender, new Message<object>("MethodNotFound", payload));
+                    Send(sender, new MethodNotFoundMessage(payload));
                 }));
 
-            AddMethod(new Method<object>("MethodNotFound", (sender, payload) =>
+            AddMethod<MethodNotFoundMessage>(new Method<object>((sender, payload) =>
             {
                 Logger.Trace($"Method not found: {payload}");
             }));
-            AddMethod(new Method("Ping", sender =>
+
+            AddMethod<PingMessage>(new Method(sender =>
             {
                 Logger.Trace($"Received Ping from {sender.GetObjectRef()}. Sending Pong.");
-                SendMessageTo(sender, new Message("Pong"));
+                Send(sender, new PongMessage());
             }));
-            AddMethod(new Method("Pong", sender =>
+
+            AddMethod<PongMessage>(new Method(sender =>
             {
                 Logger.Trace($"Received Pong from {sender.GetObjectRef()}");
             }));
         }
 
-        protected IEnumerable<IMethod> GetMethods()
+        protected List<KeyValuePair<string, IMethod>> GetMethods()
         {
-            return _methods.Values;
+            return _methods.ToList();
         }
 
         public string GetObjectRef()
@@ -50,28 +54,39 @@ namespace RealOOP
             return $"[{GetType().Name}|{GetHashCode()}]";
         }
 
-        protected void AddMethod(IMethod method)
+        private void AddMethod(string messageTypeName, IMethod method)
         {
-            _methods[method.Name] = method;
+            _methods[messageTypeName] = method;
         }
 
-        public virtual void SendMessageTo(RealObject destinationObject, Message message)
+        protected void AddMethod<T>(IMethod method)
+            where T : Message
         {
-            destinationObject.SendMessage(this, message);
+            AddMethod(typeof (T).FullName, method);
         }
 
-        public void Mixin<M>()
-           where M : RealObject, new()
+        public virtual void Send<T>(RealObject destinationObject, T message)
+            where T : Message
         {
-            var mixin = new M();
+            destinationObject.Recv(this, message);
+        }
+
+        public void Mixin<T>()
+           where T : RealObject, new()
+        {
+            var mixin = new T();
             mixin.Logger = Logger;
-            mixin.GetMethods().ToList().ForEach(method => AddMethod(method));
+            mixin.GetMethods()
+                .ForEach(namedMethod => 
+                    AddMethod(namedMethod.Key, namedMethod.Value)
+                );
         }
 
-        protected virtual void SendMessage(RealObject sender, Message message)
+        protected virtual void Recv<T>(RealObject sender, T message)
+            where T : Message
         {
-            Logger.Trace($"{GetObjectRef()} calls {message.MethodName} method in {sender.GetObjectRef()}");
-            var method = _methods[message.MethodName];
+            Logger.Trace($"{GetObjectRef()} calls {message.GetType().Name} method in {sender.GetObjectRef()}");
+            var method = _methods[message.GetType().FullName];
             sender = sender ?? new DeadLetterObject();
             method.Call(sender, message.Payload);
         }

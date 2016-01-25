@@ -43,12 +43,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DynamicObject.cs" />
-    <Compile Include="GreeterObject.cs" />
-    <Compile Include="GreetMessage.cs" />
+    <Compile Include="Messages\DrawSquareMessage.cs" />
+    <Compile Include="Messages\DrawTreeMessage.cs" />
+    <Compile Include="Messages\GreetMessage.cs" />
     <Compile Include="Mixins\SquareDrawerObject.cs" />
     <Compile Include="Mixins\TreeDrawerObject.cs" />
-    <Compile Include="PoliteGreeterObject.cs" />
+    <Compile Include="Objects\GreeterObject.cs" />
+    <Compile Include="Objects\PoliteGreeterObject.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

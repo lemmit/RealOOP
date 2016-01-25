@@ -46,14 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeadLetterObject.cs" />
     <Compile Include="Defaultable\DefaultableDictionary.cs" />
     <Compile Include="Defaultable\DefaultableList.cs" />
     <Compile Include="Logging\ConsoleLogger.cs" />
     <Compile Include="Logging\DummyLogger.cs" />
     <Compile Include="Logging\ILogger.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="Messages\MethodNotFoundMessage.cs" />
+    <Compile Include="Messages\PingMessage.cs" />
+    <Compile Include="Messages\PongMessage.cs" />
     <Compile Include="Method.cs" />
+    <Compile Include="Objects\DeadLetterObject.cs" />
+    <Compile Include="Objects\DynamicObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealObject.cs" />
   </ItemGroup>

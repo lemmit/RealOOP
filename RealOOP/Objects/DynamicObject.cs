@@ -1,12 +1,13 @@
 ﻿using RealOOP.Logging;
 
-namespace RealOOP.Example
+namespace RealOOP.Objects
 {
     public class DynamicObject : RealObject
     {
-        public void AddOrUpdateMethod(IMethod method)
+        public void AddOrUpdateMethod<T>(IMethod method)
+            where T : Message
         {
-            AddMethod(method);
+            AddMethod<T>(method);
         }
 
         public DynamicObject(ILogger logger = null) : base(logger)

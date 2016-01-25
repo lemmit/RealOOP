@@ -1,17 +1,14 @@
-﻿using RealOOP.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using RealOOP.Example.Messages;
+using RealOOP.Logging;
 
-namespace RealOOP.Example
+namespace RealOOP.Example.Objects
 {
     public class PoliteGreeterObject : GreeterObject
     {
         public PoliteGreeterObject(ILogger logger = null) : base(logger)
         {
-            AddMethod(new Method("Greet", sender =>
+            AddMethod<GreetMessage>(new Method(sender =>
             {
                 Console.WriteLine("Could you tell me your name, please?");
                 var name = Console.ReadLine();

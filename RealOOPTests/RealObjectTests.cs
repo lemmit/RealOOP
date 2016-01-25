@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using RealOOP;
+using RealOOP.Messages;
 using RealOOPTests.Fakes;
 
 namespace RealOOPTests
@@ -17,7 +18,7 @@ namespace RealOOPTests
             logger.FirstCall(str => str.ToString().Contains("call Ping"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.SendMessageTo(secondRealObject, new Message("Ping"));
+            firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
@@ -30,7 +31,7 @@ namespace RealOOPTests
                 
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.SendMessageTo(secondRealObject, new Message("Ping"));
+            firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
@@ -43,7 +44,7 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("call Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.SendMessageTo(secondRealObject, new Message("Ping"));
+            firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
 
@@ -58,7 +59,7 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("Recieved Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.SendMessageTo(secondRealObject, new Message("Ping"));
+            firstRealObject.Send(secondRealObject, new PingMessage());
         }
 
         [TestMethod]
@@ -72,7 +73,7 @@ namespace RealOOPTests
                 .AndThenCall(str => str.ToString().Contains("Received Pong"));
             var firstRealObject = new RealObject(logger);
             var secondRealObject = new RealObject(logger);
-            firstRealObject.SendMessageTo(secondRealObject, new Message("Ping"));
+            firstRealObject.Send(secondRealObject, new PingMessage());
             Assert.AreEqual(4, logger.NumberOfCalls);
         }
     }

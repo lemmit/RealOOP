@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RealOOP.Example
+namespace RealOOP.Messages
 {
-    public class GreetMessage : Message
+    public class PingMessage : Message
     {
-        public GreetMessage() : base("Greet") { }
     }
 }
