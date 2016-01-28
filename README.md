@@ -13,6 +13,6 @@ compose object dynamically using mixins and change it runtime.
 Calls between objects are fully asynchronous.
 
 ## TODO
-Add some message correlation system [Ask<->Answer]
+* Add some message correlation system [Ask<->Answer]
 
 Probably those TODOs gonna stay there for a while...
